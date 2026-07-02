@@ -1,9 +1,32 @@
-category,name,target,current,role,note
-summary,July Deposit Target,80000,0,,Minimum cash collected from new deals
-summary,Weekly Team Target,20000,0,,Four closer units x $5000
-summary,Content Target,10,0,,Minimum 2 Videos from each closer
-meta,Last Updated,,,7/2/26,
-closer,SP + Isabel,20000,0,Closer unit,
-closer,Sofia,20000,2000,Closer,
-closer,Christian,20000,6000,Closer,
-closer,Pablo,20000,0,Closer,
+category,date,name,target,current,role,note,sp_isabel,sofia,christian,pablo
+summary,,July Deposit Target,80000,0,,Minimum cash collected from new deals,,,,
+summary,,Weekly Team Target,20000,0,,Four closer units x $5000,,,,
+summary,,Content Target,12,0,,Two videos from each of six contributors,,,,
+meta,2026-07-02,Last Updated,,,,,,,,
+closer,,SP + Isabel,20000,,Closer unit,,,,,
+closer,,Sofia,20000,,Closer,,,,,
+closer,,Christian,20000,,Closer,,,,,
+closer,,Pablo,20000,,Closer,,,,,
+holiday,2026-07-03,Observed Independence Day,,,,,,,,
+daily,2026-07-01,,,,,,0,0,1000,0
+daily,2026-07-02,,,,,,0,0,0,0
+daily,2026-07-06,,,,,,0,0,0,0
+daily,2026-07-07,,,,,,0,0,0,0
+daily,2026-07-08,,,,,,0,0,0,0
+daily,2026-07-09,,,,,,0,0,0,0
+daily,2026-07-10,,,,,,0,0,0,0
+daily,2026-07-13,,,,,,0,0,0,0
+daily,2026-07-14,,,,,,0,0,0,0
+daily,2026-07-15,,,,,,0,0,0,0
+daily,2026-07-16,,,,,,0,0,0,0
+daily,2026-07-17,,,,,,0,0,0,0
+daily,2026-07-20,,,,,,0,0,0,0
+daily,2026-07-21,,,,,,0,0,0,0
+daily,2026-07-22,,,,,,0,0,0,0
+daily,2026-07-23,,,,,,0,0,0,0
+daily,2026-07-24,,,,,,0,0,0,0
+daily,2026-07-27,,,,,,0,0,0,0
+daily,2026-07-28,,,,,,0,0,0,0
+daily,2026-07-29,,,,,,0,0,0,0
+daily,2026-07-30,,,,,,0,0,0,0
+daily,2026-07-31,,,,,,0,0,0,0
