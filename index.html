@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Business Unit July 2026 targets and current status" />
+  <title>Targets & Current Status</title>
+  <style>
+    :root {
+      --bg: #f4f8fc;
+      --surface: #ffffff;
+      --surface-soft: #edf5fb;
+      --line: #d5e4f0;
+      --text: #18324a;
+      --muted: #6c8397;
+      --teal: #16a6a1;
+      --blue: #4b91d1;
+      --track: #deebf4;
+      --pink: #f36f91;
+      --shadow: 0 12px 28px rgba(45, 84, 115, 0.09);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(117, 196, 227, .22), transparent 28%),
+        radial-gradient(circle at 100% 8%, rgba(113, 205, 191, .18), transparent 24%),
+        var(--bg);
+    }
+
+    .wrap {
+      width: min(1280px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 34px 0 54px;
+    }
+
+    .eyebrow {
+      margin-bottom: 10px;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: -.045em;
+      color: #17314a;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin: 14px 0 28px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .kpis,
+    .people {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(240,247,252,.98));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      min-height: 148px;
+      padding: 22px 20px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .value {
+      margin: 10px 0 3px;
+      color: #18324a;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -.035em;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .progress {
+      height: 9px;
+      margin-top: 17px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 14px;
+      margin: 20px 2px 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -.025em;
+    }
+
+    .section-sub,
+    .updated {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .person {
+      position: relative;
+      min-height: 224px;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .person::after {
+      content: "";
+      position: absolute;
+      right: -42px;
+      bottom: -56px;
+      width: 145px;
+      height: 145px;
+      border-radius: 50%;
+      background: rgba(82, 190, 183, .10);
+    }
+
+    .name {
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .role {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .amount {
+      margin-top: 18px;
+      font-size: 29px;
+      font-weight: 900;
+      letter-spacing: -.03em;
+    }
+
+    .targetline {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 13px;
+      padding: 6px 10px;
+      border: 1px solid #c9dce9;
+      border-radius: 999px;
+      background: rgba(255,255,255,.66);
+      color: #3e566b;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--pink);
+    }
+
+    @media (max-width: 960px) {
+      .kpis,
+      .people { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 580px) {
+      .wrap { width: min(100% - 24px, 1280px); padding-top: 24px; }
+      .kpis,
+      .people { grid-template-columns: 1fr; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      h1 { font-size: 40px; }
+      .intro { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Business Unit • July 2026</div>
+      <h1>Targets &amp; Current Status</h1>
+      <p class="intro">A simple operating dashboard for weekly deposits, individual closer performance, content output, and key revenue support activity.</p>
+    </header>
+
+    <section class="grid kpis">
+      <article class="card kpi">
+        <div class="label">July Deposit Target</div>
+        <div class="value" id="deposit-target">$80,000</div>
+        <div class="note" id="deposit-target-note">Minimum cash collected from new deals</div>
+        <div class="progress"><div class="bar" id="deposit-target-bar" style="width:100%"></div></div>
+      </article>
+
+      <article class="card kpi">
+        <div class="label">Current Deposits</div>
+        <div class="value" id="current-deposits">$0</div>
+        <div class="note" id="deposit-remaining">$80,000 remaining</div>
+        <div class="progress"><div class="bar" id="deposit-progress" style="width:0%"></div></div>
+      </article>
+
+      <article class="card kpi">
+        <div class="label">Weekly Team Target</div>
+        <div class="value" id="weekly-target">$20,000</div>
+        <div class="note" id="weekly-target-note">Four closer units × $5,000</div>
+      </article>
+
+      <article class="card kpi">
+        <div class="label">Content Target</div>
+        <div class="value" id="content-target">12 / week</div>
+        <div class="note" id="content-target-note">Two videos from each of six contributors</div>
+        <div class="progress"><div class="bar" id="content-progress" style="width:0%"></div></div>
+      </article>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>Closer Scoreboard</h2>
+          <div class="section-sub">Weekly deposit minimum by closer unit</div>
+        </div>
+        <div class="updated" id="last-updated">Not updated yet</div>
+      </div>
+
+      <div class="grid people" id="people-grid"></div>
+    </section>
+  </main>
+
+  <script>
+    const money = value => new Intl.NumberFormat('en-US', {
+      style: 'currency', currency: 'USD', maximumFractionDigits: 0
+    }).format(Number(value) || 0);
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const headers = lines.shift().split(',').map(v => v.trim());
+      return lines.map(line => {
+        const values = line.split(',').map(v => v.trim());
+        return Object.fromEntries(headers.map((h, i) => [h, values[i] || '']));
+      });
+    }
+
+    function pct(current, target) {
+      if (!Number(target)) return 0;
+      return Math.max(0, Math.min(100, Math.round((Number(current) / Number(target)) * 100)));
+    }
+
+    function statusFor(current, target) {
+      const p = pct(current, target);
+      if (p >= 100) return 'Target met';
+      if (p > 0) return 'In progress';
+      return 'Not started';
+    }
+
+    fetch('data.csv?ts=' + Date.now())
+      .then(response => {
+        if (!response.ok) throw new Error('Could not load data.csv');
+        return response.text();
+      })
+      .then(text => {
+        const rows = parseCSV(text);
+        const summary = Object.fromEntries(rows.filter(r => r.category === 'summary').map(r => [r.name, r]));
+        const closers = rows.filter(r => r.category === 'closer');
+        const meta = rows.find(r => r.category === 'meta' && r.name === 'Last Updated');
+
+        const deposit = summary['July Deposit Target'];
+        const weekly = summary['Weekly Team Target'];
+        const content = summary['Content Target'];
+        const totalDeposits = closers.reduce((sum, r) => sum + (Number(r.current) || 0), 0);
+        const depositPercent = pct(totalDeposits, deposit.target);
+
+        document.getElementById('deposit-target').textContent = money(deposit.target);
+        document.getElementById('deposit-target-note').textContent = deposit.note;
+        document.getElementById('current-deposits').textContent = money(totalDeposits);
+        document.getElementById('deposit-remaining').textContent = money(Math.max(0, Number(deposit.target) - totalDeposits)) + ' remaining';
+        document.getElementById('deposit-progress').style.width = depositPercent + '%';
+        document.getElementById('weekly-target').textContent = money(weekly.target);
+        document.getElementById('weekly-target-note').textContent = weekly.note;
+        document.getElementById('content-target').textContent = Number(content.target) + ' / week';
+        document.getElementById('content-target-note').textContent = content.note;
+        document.getElementById('content-progress').style.width = pct(content.current, content.target) + '%';
+        document.getElementById('last-updated').textContent = meta && meta.role ? 'Updated ' + meta.role : 'Not updated yet';
+
+        document.getElementById('people-grid').innerHTML = closers.map(person => {
+          const percent = pct(person.current, person.target);
+          return `
+            <article class="card person">
+              <div class="name">${person.name}</div>
+              <div class="role">${person.role}</div>
+              <div class="amount">${money(person.current)}</div>
+              <div class="targetline"><span>July total</span><span>${percent}% of ${money(person.target)}</span></div>
+              <div class="progress"><div class="bar" style="width:${percent}%"></div></div>
+              <div class="status"><span class="dot"></span>${statusFor(person.current, person.target)}</div>
+            </article>`;
+        }).join('');
+      })
+      .catch(error => {
+        document.getElementById('last-updated').textContent = 'Data file could not be loaded';
+        console.error(error);
+      });
+  </script>
+</body>
+</html>
