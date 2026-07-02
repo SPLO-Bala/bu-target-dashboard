@@ -63,7 +63,7 @@
     }
 
     .grid { display: grid; gap: 16px; }
-    .kpis, .people, .glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .kpis, .people { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
     .card {
       background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(240,247,252,.98));
@@ -72,7 +72,7 @@
       box-shadow: var(--shadow);
     }
 
-    .kpi, .glance-card { padding: 22px 20px; }
+    .kpi { padding: 22px 20px; }
     .kpi { min-height: 148px; }
 
     .label {
@@ -123,9 +123,6 @@
       font-size: 24px;
       letter-spacing: -.025em;
     }
-
-    .glance-card { min-height: 116px; }
-    .glance-card .value { font-size: 30px; }
 
     .person {
       position: relative;
@@ -196,12 +193,12 @@
     }
 
     @media (max-width: 960px) {
-      .kpis, .people, .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kpis, .people { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 580px) {
       .wrap { width: min(100% - 24px, 1320px); padding-top: 24px; }
-      .kpis, .people, .glance { grid-template-columns: 1fr; }
+      .kpis, .people { grid-template-columns: 1fr; }
       .section-head { align-items: flex-start; flex-direction: column; }
       h1 { font-size: 40px; }
       .intro { font-size: 15px; }
@@ -213,7 +210,7 @@
     <header>
       <div class="eyebrow">Business Unit • July 2026</div>
       <h1>Targets &amp; Current Status</h1>
-      <p class="intro">A live operating dashboard for monthly deposits, closer performance, weekly pacing, and day-by-day results.</p>
+      <p class="intro">A live operating dashboard for monthly deposits, closer performance, and weekly pacing.</p>
     </header>
 
     <section class="grid kpis">
@@ -248,42 +245,10 @@
     <section>
       <div class="section-head">
         <div>
-          <h2>Month at a Glance</h2>
-          <div class="section-sub">Time remaining and the average collection pace needed from this point</div>
-        </div>
-        <div class="updated" id="last-updated">Not updated yet</div>
-      </div>
-
-      <div class="grid glance">
-        <article class="card glance-card">
-          <div class="label">Calendar Days Left</div>
-          <div class="value" id="calendar-days-left">—</div>
-          <div class="note">After the latest update date</div>
-        </article>
-        <article class="card glance-card">
-          <div class="label">Business Days Left</div>
-          <div class="value" id="business-days-left">—</div>
-          <div class="note">Weekdays excluding listed holidays</div>
-        </article>
-        <article class="card glance-card">
-          <div class="label">Amount Remaining</div>
-          <div class="value" id="glance-remaining">$80,000</div>
-          <div class="note">To reach the July deposit target</div>
-        </article>
-        <article class="card glance-card">
-          <div class="label">Needed per Business Day</div>
-          <div class="value" id="needed-per-day">—</div>
-          <div class="note">Based on the remaining business days</div>
-        </article>
-      </div>
-    </section>
-
-    <section>
-      <div class="section-head">
-        <div>
           <h2>Closer Scoreboard</h2>
           <div class="section-sub">July deposits collected against each $20,000 closer-unit goal</div>
         </div>
+        <div class="updated" id="last-updated">Not updated yet</div>
       </div>
       <div class="grid people" id="people-grid"></div>
     </section>
@@ -309,31 +274,6 @@
             </tr>
           </thead>
           <tbody id="weekly-table"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <div class="section-head">
-        <div>
-          <h2>Day-by-Day Breakdown</h2>
-          <div class="section-sub">Daily deposits by closer unit and cumulative monthly production</div>
-        </div>
-      </div>
-      <div class="card table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>SP + Isabel</th>
-              <th>Sofia</th>
-              <th>Christian</th>
-              <th>Pablo</th>
-              <th>Daily Total</th>
-              <th>Month Total</th>
-            </tr>
-          </thead>
-          <tbody id="daily-table"></tbody>
         </table>
       </div>
     </section>
@@ -370,8 +310,31 @@
 
     const pct = (current, target) => target ? Math.max(0, Math.min(100, (current / target) * 100)) : 0;
 
+    function normalizeDateString(dateString) {
+      const value = String(dateString || '').trim();
+      if (!value) return '';
+
+      // Already in ISO format: YYYY-MM-DD
+      if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(value)) {
+        const [y, m, d] = value.split('-').map(Number);
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+
+      // Excel/Mac format: M/D/YY or M/D/YYYY
+      if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value)) {
+        let [m, d, y] = value.split('/').map(Number);
+        if (y < 100) y += 2000;
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+
+      return value;
+    }
+
     function localDate(dateString) {
-      const [y, m, d] = dateString.split('-').map(Number);
+      const normalized = normalizeDateString(dateString);
+      const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return new Date(NaN);
+      const [, y, m, d] = match.map(Number);
       return new Date(y, m - 1, d);
     }
 
@@ -397,6 +360,12 @@
       })
       .then(text => {
         const rows = parseCSV(text);
+
+        // Normalize every CSV date so Excel-formatted dates and ISO dates both work.
+        rows.forEach(row => {
+          if (row.date) row.date = normalizeDateString(row.date);
+        });
+
         const summary = Object.fromEntries(rows.filter(r => r.category === 'summary').map(r => [r.name, r]));
         const closers = rows.filter(r => r.category === 'closer');
         const dailyRows = rows.filter(r => r.category === 'daily').sort((a, b) => a.date.localeCompare(b.date));
@@ -428,15 +397,6 @@
         const totalDeposits = Object.values(closerTotals).reduce((a, b) => a + b, 0);
         const amountRemaining = Math.max(0, depositTarget - totalDeposits);
 
-        let businessDaysLeft = 0;
-        for (let d = new Date(asOf); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-          if (d.getTime() === asOf.getTime()) continue;
-          const weekday = d.getDay();
-          if (weekday !== 0 && weekday !== 6 && !holidaySet.has(dateKey(d))) businessDaysLeft++;
-        }
-
-        const calendarDaysLeft = daysBetweenAfter(asOf, monthEnd);
-        const neededPerDay = businessDaysLeft ? amountRemaining / businessDaysLeft : amountRemaining;
 
         document.getElementById('deposit-target').textContent = money(depositTarget);
         document.getElementById('current-deposits').textContent = money(totalDeposits);
@@ -447,10 +407,6 @@
         document.getElementById('content-progress').style.width = pct(contentCurrent, contentTarget) + '%';
         document.getElementById('last-updated').textContent =
           'Updated ' + localDate(asOfString).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
-        document.getElementById('calendar-days-left').textContent = calendarDaysLeft;
-        document.getElementById('business-days-left').textContent = businessDaysLeft;
-        document.getElementById('glance-remaining').textContent = money(amountRemaining);
-        document.getElementById('needed-per-day').textContent = money(neededPerDay);
 
         document.getElementById('people-grid').innerHTML = closers.map(person => {
           const current = closerTotals[person.name] || 0;
@@ -504,42 +460,6 @@
             <td><strong>${money(cumulativeActual)}</strong></td>
           </tr>`;
         }).join('');
-
-        let runningTotal = 0;
-        const dailyMap = new Map(dailyRows.map(r => [r.date, r]));
-        const displayRows = [];
-        for (let d = new Date(2026, 6, 1); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-          const key = dateKey(d);
-          const weekday = d.getDay();
-          if (weekday === 0 || weekday === 6) continue;
-
-          if (holidaySet.has(key)) {
-            displayRows.push(`<tr class="holiday">
-              <td><strong>${formatDate(key)}</strong></td>
-              <td colspan="4">Observed Independence Day holiday</td>
-              <td>—</td>
-              <td>${money(runningTotal)}</td>
-            </tr>`);
-            continue;
-          }
-
-          const r = dailyMap.get(key) || {};
-          const values = [number(r.sp_isabel), number(r.sofia), number(r.christian), number(r.pablo)];
-          const dailyTotal = values.reduce((a, b) => a + b, 0);
-          runningTotal += dailyTotal;
-          const afterAsOf = localDate(key) > asOf;
-
-          displayRows.push(`<tr>
-            <td><strong>${formatDate(key)}</strong></td>
-            <td>${afterAsOf && !values[0] ? '<span class="muted">—</span>' : money(values[0])}</td>
-            <td>${afterAsOf && !values[1] ? '<span class="muted">—</span>' : money(values[1])}</td>
-            <td>${afterAsOf && !values[2] ? '<span class="muted">—</span>' : money(values[2])}</td>
-            <td>${afterAsOf && !values[3] ? '<span class="muted">—</span>' : money(values[3])}</td>
-            <td>${afterAsOf && !dailyTotal ? '<span class="muted">—</span>' : '<strong>' + money(dailyTotal) + '</strong>'}</td>
-            <td><strong>${money(runningTotal)}</strong></td>
-          </tr>`);
-        }
-        document.getElementById('daily-table').innerHTML = displayRows.join('');
       })
       .catch(error => {
         document.getElementById('last-updated').textContent = 'Data file could not be loaded';
