@@ -276,7 +276,7 @@
       <article class="card kpi">
         <div class="label">This Week's Team Target</div>
         <div class="value" id="weekly-target">$20,000</div>
-        <div class="note" id="weekly-actual">Actual: $0</div>
+        <div class="note" id="weekly-actual">Collected: $0</div>
         <div class="note" id="weekly-remaining">Remaining: $20,000</div>
         <div class="progress"><div class="bar" id="weekly-progress"></div></div>
       </article>
@@ -314,7 +314,7 @@
               <th>Period</th>
               <th>Weekly Plan</th>
               <th>Adjusted Target</th>
-              <th>Actual</th>
+              <th>Collected</th>
               <th>Remaining</th>
               <th>Progress</th>
               <th>Cumulative Target</th>
@@ -533,7 +533,7 @@
         const activeRemaining = Math.max(0, activeTarget - activePeriod.actual);
 
         document.getElementById('weekly-target').textContent = money(activeTarget);
-        document.getElementById('weekly-actual').textContent = 'Actual: ' + money(activePeriod.actual);
+        document.getElementById('weekly-actual').textContent = 'Collected: ' + money(activePeriod.actual);
         document.getElementById('weekly-remaining').textContent = 'Remaining: ' + money(activeRemaining);
         document.getElementById('weekly-progress').style.width = pct(activePeriod.actual, activeTarget) + '%';
 
