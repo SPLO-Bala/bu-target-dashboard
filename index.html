@@ -16,6 +16,10 @@
       --teal: #16a6a1;
       --blue: #4b91d1;
       --track: #deebf4;
+      --sp-isabel: #2aa6a1;
+      --sofia: #6c8ee6;
+      --christian: #f0a34a;
+      --pablo: #d96fa2;
       --shadow: 0 12px 28px rgba(45, 84, 115, 0.09);
     }
 
@@ -110,6 +114,45 @@
       background: linear-gradient(90deg, var(--teal), var(--blue));
     }
 
+    .stacked-progress {
+      display: flex;
+      height: 13px;
+      margin-top: 17px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--track);
+      box-shadow: inset 0 0 0 1px rgba(92, 129, 157, .05);
+    }
+
+    .stacked-progress .segment {
+      height: 100%;
+      min-width: 0;
+      transition: width .35s ease;
+    }
+
+    .deposit-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 12px;
+      margin-top: 11px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 8px;
+      border-radius: 50%;
+    }
+
     .section-head {
       display: flex;
       justify-content: space-between;
@@ -180,16 +223,17 @@
     .holiday td { color: var(--muted); background: rgba(237,245,251,.65); }
 
     .week-progress {
-      width: 130px;
-      height: 7px;
+      display: flex;
+      width: 160px;
+      height: 10px;
       overflow: hidden;
       border-radius: 999px;
       background: var(--track);
     }
-    .week-progress > div {
+
+    .week-progress .segment {
       height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--teal), var(--blue));
+      min-width: 0;
     }
 
     @media (max-width: 960px) {
@@ -225,7 +269,8 @@
         <div class="label">Current Deposits</div>
         <div class="value" id="current-deposits">$0</div>
         <div class="note" id="deposit-remaining">$80,000 remaining</div>
-        <div class="progress"><div class="bar" id="deposit-progress"></div></div>
+        <div class="stacked-progress" id="deposit-progress" aria-label="Deposits by closer unit"></div>
+        <div class="deposit-legend" id="deposit-legend"></div>
       </article>
 
       <article class="card kpi">
@@ -257,7 +302,7 @@
       <div class="section-head">
         <div>
           <h2>Weekly Pace</h2>
-          <div class="section-sub">The $80,000 monthly target is prorated across July’s 22 business days</div>
+          <div class="section-sub">The remaining monthly balance is distributed evenly across the four full weeks</div>
         </div>
       </div>
       <div class="card table-card">
@@ -265,8 +310,8 @@
           <thead>
             <tr>
               <th>Period</th>
-              <th>Business Days</th>
-              <th>Period Target</th>
+              <th>Weekly Plan</th>
+              <th>Adjusted Target</th>
               <th>Actual</th>
               <th>Progress</th>
               <th>Cumulative Target</th>
@@ -388,6 +433,13 @@
           'Pablo': 'pablo'
         };
 
+        const closerColors = {
+          'SP + Isabel': 'var(--sp-isabel)',
+          'Sofia': 'var(--sofia)',
+          'Christian': 'var(--christian)',
+          'Pablo': 'var(--pablo)'
+        };
+
         const closerTotals = {};
         closers.forEach(c => {
           const key = closerKeys[c.name];
@@ -401,7 +453,18 @@
         document.getElementById('deposit-target').textContent = money(depositTarget);
         document.getElementById('current-deposits').textContent = money(totalDeposits);
         document.getElementById('deposit-remaining').textContent = money(amountRemaining) + ' remaining';
-        document.getElementById('deposit-progress').style.width = pct(totalDeposits, depositTarget) + '%';
+        document.getElementById('deposit-progress').innerHTML = closers.map(person => {
+          const contribution = closerTotals[person.name] || 0;
+          const width = pct(contribution, depositTarget);
+          return `<div class="segment" title="${person.name}: ${money(contribution)}"
+                    style="width:${width}%;background:${closerColors[person.name]}"></div>`;
+        }).join('');
+
+        document.getElementById('deposit-legend').innerHTML = closers.map(person => `
+          <span class="legend-item">
+            <span class="legend-dot" style="background:${closerColors[person.name]}"></span>
+            ${person.name}: ${money(closerTotals[person.name] || 0)}
+          </span>`).join('');
         document.getElementById('weekly-target').textContent = money(weeklyTarget);
         document.getElementById('content-target').textContent = contentTarget + ' / week';
         document.getElementById('content-progress').style.width = pct(contentCurrent, contentTarget) + '%';
@@ -418,17 +481,9 @@
               <div class="role">${person.role}</div>
               <div class="amount">${money(current)}</div>
               <div class="targetline"><span>July total</span><span>${Math.round(percent)}% of ${money(target)}</span></div>
-              <div class="progress"><div class="bar" style="width:${percent}%"></div></div>
+              <div class="progress"><div class="bar" style="width:${percent}%;background:${closerColors[person.name]}"></div></div>
             </article>`;
         }).join('');
-
-        const businessDays = [];
-        for (let d = new Date(2026, 6, 1); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-          const weekday = d.getDay();
-          const key = dateKey(d);
-          if (weekday !== 0 && weekday !== 6 && !holidaySet.has(key)) businessDays.push(key);
-        }
-        const dailyTarget = depositTarget / businessDays.length;
 
         const periods = [
           ['Jul 1–2', '2026-07-01', '2026-07-02'],
@@ -438,24 +493,45 @@
           ['Jul 27–31', '2026-07-27', '2026-07-31']
         ];
 
+        const periodResults = periods.map(([label, start, end]) => {
+          const periodRows = dailyRows.filter(r => r.date >= start && r.date <= end);
+          const contributions = {
+            'SP + Isabel': periodRows.reduce((sum, r) => sum + number(r.sp_isabel), 0),
+            'Sofia': periodRows.reduce((sum, r) => sum + number(r.sofia), 0),
+            'Christian': periodRows.reduce((sum, r) => sum + number(r.christian), 0),
+            'Pablo': periodRows.reduce((sum, r) => sum + number(r.pablo), 0)
+          };
+          const actual = Object.values(contributions).reduce((a, b) => a + b, 0);
+          return { label, start, end, contributions, actual };
+        });
+
+        // Lock the opening Jul 1–2 period at what was actually collected,
+        // then divide the remaining monthly target evenly over the four full weeks.
+        const openingActual = periodResults[0].actual;
+        const remainingAfterOpening = Math.max(0, depositTarget - openingActual);
+        const fullWeekTarget = remainingAfterOpening / 4;
+
         let cumulativeTarget = 0;
         let cumulativeActual = 0;
-        document.getElementById('weekly-table').innerHTML = periods.map(([label, start, end]) => {
-          const periodBusinessDays = businessDays.filter(d => d >= start && d <= end).length;
-          const periodTarget = dailyTarget * periodBusinessDays;
-          const periodRows = dailyRows.filter(r => r.date >= start && r.date <= end);
-          const actual = periodRows.reduce((sum, r) =>
-            sum + number(r.sp_isabel) + number(r.sofia) + number(r.christian) + number(r.pablo), 0);
+
+        document.getElementById('weekly-table').innerHTML = periodResults.map((period, index) => {
+          const periodTarget = index === 0 ? openingActual : fullWeekTarget;
           cumulativeTarget += periodTarget;
-          cumulativeActual += actual;
-          const progress = pct(actual, periodTarget);
+          cumulativeActual += period.actual;
+
+          const stackedSegments = closers.map(person => {
+            const contribution = period.contributions[person.name] || 0;
+            const width = pct(contribution, periodTarget);
+            return `<div class="segment" title="${person.name}: ${money(contribution)}"
+                      style="width:${width}%;background:${closerColors[person.name]}"></div>`;
+          }).join('');
 
           return `<tr>
-            <td><strong>${label}</strong></td>
-            <td>${periodBusinessDays}</td>
+            <td><strong>${period.label}</strong></td>
+            <td>${index === 0 ? 'Opening 2 days' : 'Full week'}</td>
             <td>${money(periodTarget)}</td>
-            <td>${money(actual)}</td>
-            <td><div class="week-progress"><div style="width:${progress}%"></div></div></td>
+            <td>${money(period.actual)}</td>
+            <td><div class="week-progress">${stackedSegments}</div></td>
             <td>${money(cumulativeTarget)}</td>
             <td><strong>${money(cumulativeActual)}</strong></td>
           </tr>`;
