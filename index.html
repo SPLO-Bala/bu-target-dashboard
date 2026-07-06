@@ -274,9 +274,11 @@
       </article>
 
       <article class="card kpi">
-        <div class="label">Weekly Team Target</div>
+        <div class="label">This Week's Team Target</div>
         <div class="value" id="weekly-target">$20,000</div>
-        <div class="note">Four closer units × $5,000</div>
+        <div class="note" id="weekly-actual">Actual: $0</div>
+        <div class="note" id="weekly-remaining">Remaining: $20,000</div>
+        <div class="progress"><div class="bar" id="weekly-progress"></div></div>
       </article>
 
       <article class="card kpi">
@@ -313,6 +315,7 @@
               <th>Weekly Plan</th>
               <th>Adjusted Target</th>
               <th>Actual</th>
+              <th>Remaining</th>
               <th>Progress</th>
               <th>Cumulative Target</th>
               <th>Cumulative Actual</th>
@@ -465,7 +468,6 @@
             <span class="legend-dot" style="background:${closerColors[person.name]}"></span>
             ${person.name}: ${money(closerTotals[person.name] || 0)}
           </span>`).join('');
-        document.getElementById('weekly-target').textContent = money(weeklyTarget);
         document.getElementById('content-target').textContent = contentTarget + ' / week';
         document.getElementById('content-progress').style.width = pct(contentCurrent, contentTarget) + '%';
         document.getElementById('last-updated').textContent =
@@ -511,11 +513,36 @@
         const remainingAfterOpening = Math.max(0, depositTarget - openingActual);
         const fullWeekTarget = remainingAfterOpening / 4;
 
+        const latestDepositDate = dailyRows
+          .filter(r => number(r.sp_isabel) + number(r.sofia) + number(r.christian) + number(r.pablo) > 0)
+          .map(r => r.date)
+          .sort()
+          .pop();
+
+        const effectiveDate = latestDepositDate && latestDepositDate > asOfString
+          ? latestDepositDate
+          : asOfString;
+
+        let activeIndex = periodResults.findIndex(period =>
+          effectiveDate >= period.start && effectiveDate <= period.end
+        );
+        if (activeIndex < 0) activeIndex = 0;
+
+        const activePeriod = periodResults[activeIndex];
+        const activeTarget = activeIndex === 0 ? openingActual : fullWeekTarget;
+        const activeRemaining = Math.max(0, activeTarget - activePeriod.actual);
+
+        document.getElementById('weekly-target').textContent = money(activeTarget);
+        document.getElementById('weekly-actual').textContent = 'Actual: ' + money(activePeriod.actual);
+        document.getElementById('weekly-remaining').textContent = 'Remaining: ' + money(activeRemaining);
+        document.getElementById('weekly-progress').style.width = pct(activePeriod.actual, activeTarget) + '%';
+
         let cumulativeTarget = 0;
         let cumulativeActual = 0;
 
         document.getElementById('weekly-table').innerHTML = periodResults.map((period, index) => {
           const periodTarget = index === 0 ? openingActual : fullWeekTarget;
+          const periodRemaining = Math.max(0, periodTarget - period.actual);
           cumulativeTarget += periodTarget;
           cumulativeActual += period.actual;
 
@@ -531,6 +558,7 @@
             <td>${index === 0 ? 'Opening 2 days' : 'Full week'}</td>
             <td>${money(periodTarget)}</td>
             <td>${money(period.actual)}</td>
+            <td><strong>${money(periodRemaining)}</strong></td>
             <td><div class="week-progress">${stackedSegments}</div></td>
             <td>${money(cumulativeTarget)}</td>
             <td><strong>${money(cumulativeActual)}</strong></td>
