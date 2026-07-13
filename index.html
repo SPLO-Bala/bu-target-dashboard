@@ -561,29 +561,37 @@
           return { label, start, end, contributions, actual };
         });
 
-        // Lock the opening Jul 1–2 period at what was actually collected,
-        // then divide the remaining monthly target evenly over the four full weeks.
-        const openingActual = periodResults[0].actual;
-        const remainingAfterOpening = Math.max(0, depositTarget - openingActual);
-        const fullWeekTarget = remainingAfterOpening / 4;
+        const today = new Date();
+        const todayKey = dateKey(today);
+        let effectiveDate = todayKey;
 
-        const latestDepositDate = dailyRows
-          .filter(r => number(r.sp_isabel) + number(r.sofia) + number(r.christian) + number(r.pablo) > 0)
-          .map(r => r.date)
-          .sort()
-          .pop();
-
-        const effectiveDate = latestDepositDate && latestDepositDate > asOfString
-          ? latestDepositDate
-          : asOfString;
+        if (effectiveDate < '2026-07-01' || effectiveDate > '2026-07-31') {
+          effectiveDate = asOfString;
+        }
 
         let activeIndex = periodResults.findIndex(period =>
           effectiveDate >= period.start && effectiveDate <= period.end
         );
-        if (activeIndex < 0) activeIndex = 0;
+
+        if (activeIndex < 0) {
+          activeIndex = effectiveDate < '2026-07-01' ? 0 : periodResults.length - 1;
+        }
+
+        const completedActual = periodResults
+          .slice(0, activeIndex)
+          .reduce((sum, period) => sum + period.actual, 0);
+
+        const remainingTargetPool = Math.max(0, depositTarget - completedActual);
+        const remainingPeriodsCount = periodResults.length - activeIndex;
+        const redistributedTarget = remainingPeriodsCount ? remainingTargetPool / remainingPeriodsCount : 0;
+
+        const targetsByPeriod = periodResults.map((period, index) => {
+          if (index < activeIndex) return period.actual;
+          return redistributedTarget;
+        });
 
         const activePeriod = periodResults[activeIndex];
-        const activeTarget = activeIndex === 0 ? openingActual : fullWeekTarget;
+        const activeTarget = targetsByPeriod[activeIndex];
         const activeRemaining = Math.max(0, activeTarget - activePeriod.actual);
 
         document.getElementById('weekly-target').textContent = money(activeTarget);
@@ -595,7 +603,7 @@
         let cumulativeActual = 0;
 
         document.getElementById('weekly-table').innerHTML = periodResults.map((period, index) => {
-          const periodTarget = index === 0 ? openingActual : fullWeekTarget;
+          const periodTarget = targetsByPeriod[index];
           const periodRemaining = Math.max(0, periodTarget - period.actual);
           cumulativeTarget += periodTarget;
           cumulativeActual += period.actual;
@@ -606,6 +614,18 @@
             return `<div class="segment" title="${person.name}: ${money(contribution)}"
                       style="width:${width}%;background:${closerColors[person.name]}"></div>`;
           }).join('');
+
+          return `<tr>
+            <td><strong>${period.label}</strong></td>
+            <td>${index === 0 ? 'Opening 2 days' : 'Full week'}</td>
+            <td>${money(periodTarget)}</td>
+            <td>${money(period.actual)}</td>
+            <td><strong>${money(periodRemaining)}</strong></td>
+            <td><div class="week-progress">${stackedSegments}</div></td>
+            <td>${money(cumulativeTarget)}</td>
+            <td><strong>${money(cumulativeActual)}</strong></td>
+          </tr>`;
+        }).join('');
 
           return `<tr>
             <td><strong>${period.label}</strong></td>
