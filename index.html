@@ -557,38 +557,35 @@
             'Christian': periodRows.reduce((sum, r) => sum + number(r.christian), 0),
             'Pablo': periodRows.reduce((sum, r) => sum + number(r.pablo), 0)
           };
-          const actual = Object.values(contributions).reduce((a, b) => a + b, 0);
-          return { label, start, end, contributions, actual };
+          const collected = Object.values(contributions).reduce((a, b) => a + b, 0);
+          return { label, start, end, contributions, actual: collected };
         });
 
-        const today = new Date();
-        const todayKey = dateKey(today);
+        // Current week comes from the actual calendar date.
+        // Completed weeks are locked at what they collected.
+        // The remaining monthly target is redistributed evenly across the current and future weeks.
+        const todayKey = dateKey(new Date());
         let effectiveDate = todayKey;
-
         if (effectiveDate < '2026-07-01' || effectiveDate > '2026-07-31') {
-          effectiveDate = asOfString;
+          effectiveDate = asOfString || '2026-07-01';
         }
 
         let activeIndex = periodResults.findIndex(period =>
           effectiveDate >= period.start && effectiveDate <= period.end
         );
+        if (activeIndex < 0) activeIndex = effectiveDate < '2026-07-01' ? 0 : periodResults.length - 1;
 
-        if (activeIndex < 0) {
-          activeIndex = effectiveDate < '2026-07-01' ? 0 : periodResults.length - 1;
-        }
-
-        const completedActual = periodResults
+        const collectedBeforeCurrentWeek = periodResults
           .slice(0, activeIndex)
           .reduce((sum, period) => sum + period.actual, 0);
 
-        const remainingTargetPool = Math.max(0, depositTarget - completedActual);
-        const remainingPeriodsCount = periodResults.length - activeIndex;
-        const redistributedTarget = remainingPeriodsCount ? remainingTargetPool / remainingPeriodsCount : 0;
+        const remainingPool = Math.max(0, depositTarget - collectedBeforeCurrentWeek);
+        const remainingPeriodCount = Math.max(1, periodResults.length - activeIndex);
+        const redistributedWeeklyTarget = remainingPool / remainingPeriodCount;
 
-        const targetsByPeriod = periodResults.map((period, index) => {
-          if (index < activeIndex) return period.actual;
-          return redistributedTarget;
-        });
+        const targetsByPeriod = periodResults.map((period, index) =>
+          index < activeIndex ? period.actual : redistributedWeeklyTarget
+        );
 
         const activePeriod = periodResults[activeIndex];
         const activeTarget = targetsByPeriod[activeIndex];
