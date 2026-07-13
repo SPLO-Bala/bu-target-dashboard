@@ -557,38 +557,33 @@
             'Christian': periodRows.reduce((sum, r) => sum + number(r.christian), 0),
             'Pablo': periodRows.reduce((sum, r) => sum + number(r.pablo), 0)
           };
-          const collected = Object.values(contributions).reduce((a, b) => a + b, 0);
-          return { label, start, end, contributions, actual: collected };
+          const actual = Object.values(contributions).reduce((a, b) => a + b, 0);
+          return { label, start, end, contributions, actual };
         });
 
-        // Current week comes from the actual calendar date.
-        // Completed weeks are locked at what they collected.
-        // The remaining monthly target is redistributed evenly across the current and future weeks.
-        const todayKey = dateKey(new Date());
-        let effectiveDate = todayKey;
-        if (effectiveDate < '2026-07-01' || effectiveDate > '2026-07-31') {
-          effectiveDate = asOfString || '2026-07-01';
-        }
+        // Lock the opening Jul 1–2 period at what was actually collected,
+        // then divide the remaining monthly target evenly over the four full weeks.
+        const openingActual = periodResults[0].actual;
+        const remainingAfterOpening = Math.max(0, depositTarget - openingActual);
+        const fullWeekTarget = remainingAfterOpening / 4;
+
+        const latestDepositDate = dailyRows
+          .filter(r => number(r.sp_isabel) + number(r.sofia) + number(r.christian) + number(r.pablo) > 0)
+          .map(r => r.date)
+          .sort()
+          .pop();
+
+        const effectiveDate = latestDepositDate && latestDepositDate > asOfString
+          ? latestDepositDate
+          : asOfString;
 
         let activeIndex = periodResults.findIndex(period =>
           effectiveDate >= period.start && effectiveDate <= period.end
         );
-        if (activeIndex < 0) activeIndex = effectiveDate < '2026-07-01' ? 0 : periodResults.length - 1;
-
-        const collectedBeforeCurrentWeek = periodResults
-          .slice(0, activeIndex)
-          .reduce((sum, period) => sum + period.actual, 0);
-
-        const remainingPool = Math.max(0, depositTarget - collectedBeforeCurrentWeek);
-        const remainingPeriodCount = Math.max(1, periodResults.length - activeIndex);
-        const redistributedWeeklyTarget = remainingPool / remainingPeriodCount;
-
-        const targetsByPeriod = periodResults.map((period, index) =>
-          index < activeIndex ? period.actual : redistributedWeeklyTarget
-        );
+        if (activeIndex < 0) activeIndex = 0;
 
         const activePeriod = periodResults[activeIndex];
-        const activeTarget = targetsByPeriod[activeIndex];
+        const activeTarget = activeIndex === 0 ? openingActual : fullWeekTarget;
         const activeRemaining = Math.max(0, activeTarget - activePeriod.actual);
 
         document.getElementById('weekly-target').textContent = money(activeTarget);
@@ -600,7 +595,7 @@
         let cumulativeActual = 0;
 
         document.getElementById('weekly-table').innerHTML = periodResults.map((period, index) => {
-          const periodTarget = targetsByPeriod[index];
+          const periodTarget = index === 0 ? openingActual : fullWeekTarget;
           const periodRemaining = Math.max(0, periodTarget - period.actual);
           cumulativeTarget += periodTarget;
           cumulativeActual += period.actual;
@@ -611,18 +606,6 @@
             return `<div class="segment" title="${person.name}: ${money(contribution)}"
                       style="width:${width}%;background:${closerColors[person.name]}"></div>`;
           }).join('');
-
-          return `<tr>
-            <td><strong>${period.label}</strong></td>
-            <td>${index === 0 ? 'Opening 2 days' : 'Full week'}</td>
-            <td>${money(periodTarget)}</td>
-            <td>${money(period.actual)}</td>
-            <td><strong>${money(periodRemaining)}</strong></td>
-            <td><div class="week-progress">${stackedSegments}</div></td>
-            <td>${money(cumulativeTarget)}</td>
-            <td><strong>${money(cumulativeActual)}</strong></td>
-          </tr>`;
-        }).join('');
 
           return `<tr>
             <td><strong>${period.label}</strong></td>
