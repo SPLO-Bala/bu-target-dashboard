@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Business Unit August 2026 targets and current status" />
+  <meta name="description" content="Business Unit July 2026 targets and current status" />
   <title>Targets & Current Status</title>
   <style>
     :root {
@@ -337,8 +337,8 @@
 
       <article class="card kpi">
         <div class="label">Content Target</div>
-        <div class="value" id="content-target">12 / week</div>
-        <div class="note">Two videos from each of six contributors</div>
+        <div class="value" id="content-target">10 / week</div>
+        <div class="note">Weekly content output target</div>
         <div class="progress"><div class="bar" id="content-progress"></div></div>
       </article>
     </section>
@@ -385,6 +385,11 @@
     const money = value => new Intl.NumberFormat('en-US', {
       style: 'currency', currency: 'USD', maximumFractionDigits: 0
     }).format(Number(value) || 0);
+
+    const DASHBOARD_YEAR = 2026;
+    const DASHBOARD_MONTH_INDEX = 7; // August. JavaScript months are zero-based.
+    const DASHBOARD_MONTH_START = '2026-08-01';
+    const DASHBOARD_MONTH_END = '2026-08-31';
 
     const number = value => Number(String(value || '').replace(/[$,]/g, '')) || 0;
 
@@ -475,13 +480,13 @@
         const holidaySet = new Set(holidayRows.map(r => r.date));
         const meta = rows.find(r => r.category === 'meta' && r.name === 'Last Updated');
 
-        const depositTarget = number((summary['August Deposit Target'] || summary['July Deposit Target']).target);
+        const depositTarget = number(summary['August Deposit Target'].target);
         const weeklyTarget = number(summary['Weekly Team Target'].target);
         const contentTarget = number(summary['Content Target'].target);
         const contentCurrent = number(summary['Content Target'].current);
         const asOfString = meta.date || '2026-08-03';
         const asOf = localDate(asOfString);
-        const monthEnd = new Date(2026, 6, 31);
+        const monthEnd = new Date(2026, 7, 31);
 
         const closerKeys = {
           'SP + Isabel': 'sp_isabel',
@@ -560,30 +565,33 @@
           return { label, start, end, contributions, actual: collected };
         });
 
-        // Current week comes from the actual calendar date.
-        // Completed weeks are locked at what they collected.
-        // The remaining monthly target is redistributed evenly across the current and future periods.
         const todayKey = dateKey(new Date());
         let effectiveDate = todayKey;
-        if (effectiveDate < '2026-08-01' || effectiveDate > '2026-08-31') {
+
+        if (effectiveDate < DASHBOARD_MONTH_START || effectiveDate > DASHBOARD_MONTH_END) {
           effectiveDate = asOfString || '2026-08-03';
         }
 
         let activeIndex = periodResults.findIndex(period =>
           effectiveDate >= period.start && effectiveDate <= period.end
         );
-        if (activeIndex < 0) activeIndex = effectiveDate < '2026-08-01' ? 0 : periodResults.length - 1;
 
-        const collectedBeforeCurrentWeek = periodResults
+        if (activeIndex < 0) {
+          activeIndex = effectiveDate < DASHBOARD_MONTH_START ? 0 : periodResults.length - 1;
+        }
+
+        // Completed periods are locked at what they collected.
+        // Remaining monthly target is redistributed across the current and future periods.
+        const collectedBeforeCurrentPeriod = periodResults
           .slice(0, activeIndex)
           .reduce((sum, period) => sum + period.actual, 0);
 
-        const remainingPool = Math.max(0, depositTarget - collectedBeforeCurrentWeek);
+        const remainingPool = Math.max(0, depositTarget - collectedBeforeCurrentPeriod);
         const remainingPeriodCount = Math.max(1, periodResults.length - activeIndex);
-        const redistributedWeeklyTarget = remainingPool / remainingPeriodCount;
+        const redistributedPeriodTarget = remainingPool / remainingPeriodCount;
 
         const targetsByPeriod = periodResults.map((period, index) =>
-          index < activeIndex ? period.actual : redistributedWeeklyTarget
+          index < activeIndex ? period.actual : redistributedPeriodTarget
         );
 
         const activePeriod = periodResults[activeIndex];
@@ -613,7 +621,7 @@
 
           return `<tr>
             <td><strong>${period.label}</strong></td>
-            <td>${index === 3 ? 'Final stretch' : 'Full week'}</td>
+            <td>${index === 3 ? 'Final work period' : 'Full week'}</td>
             <td>${money(periodTarget)}</td>
             <td>${money(period.actual)}</td>
             <td><strong>${money(periodRemaining)}</strong></td>

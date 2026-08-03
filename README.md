@@ -1,41 +1,26 @@
-# BU Target Dashboard
+# BU Target Dashboard — August 2026
 
-## Normal daily update — only edit `data.csv`
+## Daily update
 
-Open `data.csv` in Excel. For the correct date row, enter the deposits collected by:
+Open `data.csv` in Excel and update the correct date row.
+
+The final four columns are:
 
 - `sp_isabel`
 - `sofia`
 - `christian`
 - `pablo`
 
-Also change the date on the `meta / Last Updated` row to the date of your latest update.
+Also update the `meta / Last Updated` row to the latest update date.
 
-For content progress, update the `current` value on the `Content Target` row.
+Then commit and push to GitHub. GitHub Pages will update automatically.
 
-Save the file as CSV, keeping the exact filename `data.csv`.
+## August setup
 
-Then in GitHub Desktop:
-
-1. Review the changes.
-2. Enter a summary such as `Update July 6 results`.
-3. Click **Commit to main**.
-4. Click **Push origin**.
-
-Netlify will automatically redeploy from GitHub. You do not need to upload anything manually to Netlify.
-
-## When to edit `index.html`
-
-You normally do not need to edit `index.html`.
-
-Only replace or edit it when changing the website design, calculations, names, targets, or layout.
-
-## Initial installation of this version
-
-Replace the existing repository files with:
-
-- `index.html`
-- `data.csv`
-- `README.md`
-
-Commit all three files once and push to `main`. After this one-time update, routine changes happen only in `data.csv`.
+- Monthly deposit target: $95,000
+- Closer-unit target: $23,750 each
+- Work periods:
+  - Aug 3–7
+  - Aug 10–14
+  - Aug 17–21
+  - Aug 24–31
