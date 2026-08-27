@@ -2,7 +2,7 @@ category,date,name,target,current,role,note,sp_isabel,sofia,christian,pablo
 summary,,August Deposit Target,95000,0,,Minimum cash collected from new deals,,,,
 summary,,Weekly Team Target,23750,0,,Four closer units x $23750,,,,
 summary,,Content Target,10,0,,Weekly content output target,,,,
-meta,8/10/26,Last Updated,,,,,,,,
+meta,8/27/26,Last Updated,,,,,,,,
 closer,,SP + Isabel,23750,,Closer unit,,,,,
 closer,,Sofia,23750,,Closer,,,,,
 closer,,Christian,23750,,Closer,,,,,
@@ -16,14 +16,14 @@ daily,8/10/26,,,,,,2000,4000,4000,0
 daily,8/11/26,,,,,,0,0,0,0
 daily,8/12/26,,,,,,0,0,0,0
 daily,8/13/26,,,,,,0,0,0,0
-daily,8/14/26,,,,,,0,0,0,0
-daily,8/17/26,,,,,,0,0,0,0
+daily,8/14/26,,,,,,4000,2500,0,0
+daily,8/17/26,,,,,,3900,0,0,0
 daily,8/18/26,,,,,,0,0,0,0
 daily,8/19/26,,,,,,0,0,0,0
-daily,8/20/26,,,,,,0,0,0,0
-daily,8/21/26,,,,,,0,0,0,0
-daily,8/24/26,,,,,,0,0,0,0
-daily,8/25/26,,,,,,0,0,0,0
+daily,8/20/26,,,,,,0,0,2000,0
+daily,8/21/26,,,,,,0,0,0,5500
+daily,8/24/26,,,,,,0,0,5000,0
+daily,8/25/26,,,,,,0,9000,0,0
 daily,8/26/26,,,,,,0,0,0,0
 daily,8/27/26,,,,,,0,0,0,0
 daily,8/28/26,,,,,,0,0,0,0
